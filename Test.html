@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Grilă la Istorie - 15.10.2024</title>
+    <link rel="shortcut icon" type="image" href="https://cdn-icons-png.flaticon.com/512/5027/5027444.png">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #2b5876, #4e4376); /* Updated gradient background */
+            color: #333;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ffffff;
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(135deg, #0f4c75, #3282b8, #bbe1fa); /* Enhanced gradient color for progress */
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .question-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .question-container.active {
+            display: block;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .question:hover {
+            transform: translateY(-5px);
+        }
+
+        .question h3 {
+            margin-bottom: 10px;
+            color: #2A69AC;
+        }
+
+        .question img {
+            max-width: 100%;
+            height: 200px;
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .question input {
+            margin-right: 10px;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .navigation button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #00c6ff, #0072ff); /* Bright gradient for buttons */
+            color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .navigation button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .navigation button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2A69AC, #4B86E8, #1E3C72); /* Darker gradient on hover */
+            transform: scale(1.05);
+        }
+
+        #submit,
+        #restart {
+            display: none;
+            margin: 20px auto;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #00c6ff, #0072ff); /* Enhanced gradient for buttons */
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            display: block;
+        }
+
+        #submit:hover,
+        #restart:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        #result {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 22px;
+            padding: 15px;
+            background: #dff0d8;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s ease;
+        }
+
+        #high-score {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 18px;
+            color: #ffffff;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .explanation {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .navigation button {
+                flex: 1;
+                margin: 0 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Test Grilă la Istorie - 15.10.2024</h2>
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <div id="quiz-container">
+        <!-- Questions will be dynamically inserted here -->
+    </div>
+
+    <div class="navigation">
+        <button id="prev" disabled>Anterior</button>
+        <button id="next">Următor</button>
+    </div>
+
+    <button id="submit">Parcă gata</button>
+    <button id="restart" style="display: none;">Restart</button>
+    <div id="result"></div>
+    <div id="high-score"></div>
+
+    <script>
+        const answers = {
+            q1: 'C',
+            q2: 'D',
+            q3: 'B',
+            q4: 'A',
+            q5: 'B',
+            q6: 'A',
+            q7: 'C',
+            q8: 'D',
+            q9: 'B',
+            q10: 'C'
+        };
+
+        const explanations = {
+            q1: 'În primăvara anului 1920, Armata Roșie a ocupat toată regiunea transnistreană, în care au instaurat puterea sovietică.',
+            q2: 'Unul din autorii ,,Memoriul cu privire la Necesitatea creării Republicii Sovietice Socialiste Moldovenești" a fost Gr. Kotovski.',
+            q3: 'Principalul scop al creării RASSM a constat in promovarea ideilor comuniste bolșevice în Basarabia și crearea unui „cap de pod” pentru expansiunea sovietică în direcția sud-vest.',
+            q4: 'Grigore Kotovski',
+            q5: 'Capitala RASSM a fost stabilită inițial în orașul Balta.',
+            q6: 'Cauzele principale ale foametei din 1925 și 1932-1933 au fost politica fiscală exagerată și seceta.',
+            q7: 'În 1929 autoritățile PC(b) au început o campanie de colectivizare forțată în RASSM.',
+            q8: 'Populația RASSM era angajată 89,9% în agricultură și doar 0,4% – la fabrici și uzine.',
+            q9: `Un proces caracteristic politicii culturale RASSM în anii '30 moldovenizarea, care a avut un caracter antinațional și antiromânesc.`,
+            q10: 'Apogeul terorii roșii a fost atins în anul 1937, printre victimele represiunilor în RASSM au fost adepţii şi promotorii grafiei latine, scriitorii Editurii de Stat.'
+        };
+
+        const questions = [
+            {
+                id: 'q1',
+                text: 'În primăvara anului 1920, toată regiunea transnistreană a fost ocupată de:',
+                options: {
+                    A: 'armata românească',
+                    B: 'armata albgardistă',
+                    C: 'Armata Roșie',
+                    D: 'armata austriacă'
+                }
+            },
+            {
+                id: 'q2',
+                text: 'Unul din autorii <i>,,Memoriul cu privire la Necesitatea creării Republicii Sovietice Socialiste Moldovenești"</i> a fost:',
+                options: {
+                    A: 'I. Inculeț',
+                    B: 'I. Stalin',
+                    C: 'Gr. Borisov',
+                    D: 'Gr. Kotovski'
+                }
+            },
+            {
+                id: 'q3',
+                text: 'Principalul scop al creării RASSM a constat în:',
+                options: {
+                    A: 'crearea unui nou stat independet',
+                    B: 'promovarea ideilor comuniste bolșevice în Basarabia și crearea unui „cap de pod” pentru expansiunea sovietică în direcția sud-vest',
+                    C: 'democratizarea regiunii transnistriene',
+                    D: 'dezvoltarea socioeconomică a regiunii'
+                }
+            },
+            {
+                id: 'q4',
+                text: 'Identifică monumentul din image. Ce personalitate este reprezentată:',
+                options: {
+                    A: 'Grigore Kotovski',
+                    B: 'Gheorghi Cicerin',
+                    C: 'Grigore Borisov',
+                    D: 'Piotr Borodin'
+                },
+                image: 'image1.jpg' // Actualizează calea dacă este necesar
+            },
+            {
+                id: 'q5',
+                text: 'Capitala RASSM a fost stabilită inițial în orașul:',
+                options: {
+                    A: 'Tiraspol',
+                    B: 'Balta',
+                    C: 'Chișinău',
+                    D: 'Odesa'
+                }
+            },
+            {
+                id: 'q6',
+                text: 'Cauzele principale ale foametei din 1925 și 1932-1933 au fost:',
+                options: {
+                    A: 'politica fiscală exagerată și seceta',
+                    B: 'dezvoltarea slabă a industiriei',
+                    C: 'numeroase răscoale din regiunile apropiate',
+                    D: 'lipsa inventarului modern agricol'
+                }
+            },
+            {
+                id: 'q7',
+                text: 'În 1929 autoritățile PC(b) au început:',
+                options: {
+                    A: 'includerea gospodăriilor țărănești din RASSM în colhozuri',
+                    B: 'foametea organizată',
+                    C: 'o campanie de colectivizare forțată în RASSM',
+                    D: 'dezvoltarea agriculturii tradiționale în RASSM '
+                }
+            },
+
+            {
+                id: 'q8',
+                text: 'Populația RASSM era angajată preponderent în felul următor:',
+                options: {
+                    A: '89,9% la fabrici și uzine și doar 0,4% – în agricultură',
+                    B: 'populația în mare parte era șomeră',
+                    C: '50% la fabrici și uzine și 50% – în agricultură',
+                    D: '89,9% în agricultură și doar 0,4% – la fabrici și uzine'
+                }
+            },
+            {
+                id: 'q9',
+                text: `Un proces caracteristic politicii culturale RASSM în anii '30:`,
+                options: {
+                    A: 'naționalizarea totală a populației',
+                    B: 'moldovenizarea, care a avut un caracter antinațional și antiromânesc',
+                    C: 'crearea unei „națiuni” românești',
+                    D: 'excluderea ateismului'
+                }
+            },
+            {
+                id: 'q10',
+                text: 'Apogeul terorii roșii a fost atins în anul 1937, printre victimele represiunilor în RASSM au fost:',
+                options: {
+                    A: 'adepţii şi promotorii ideilor comuniste',
+                    B: 'chiaburii',
+                    C: 'adepţii şi promotorii grafiei latine, scriitorii, colaboratorii Editurii de Stat',
+                    D: 'țăranii care au renunţat colectivizarea forțată'
+                }
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // Shuffle questions
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        const shuffledQuestions = shuffle([...questions]);
+
+        // Initialize High Score
+        let highScore = localStorage.getItem('highScore') || 0;
+
+        // Render Questions
+        const quizContainer = document.getElementById('quiz-container');
+
+        shuffledQuestions.forEach((q, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.classList.add('question-container');
+            if (index === 0) questionDiv.classList.add('active');
+            questionDiv.setAttribute('data-index', index);
+
+            const questionHTML = `
+                <div class="question">
+                    <h3>${index + 1}. ${q.text}</h3>
+                    ${q.image ? `<img src="${q.image}" alt="Imagine pentru Întrebarea ${index + 1}">` : ''}
+                    ${Object.entries(q.options).map(([key, value], idx) => `
+                        <input type="radio" name="${q.id}" value="${key}" id="${q.id}${key}">
+                        <label for="${q.id}${key}"> ${value}</label><br>
+                    `).join('')}
+                    <div class="feedback" id="${q.id}-feedback" style="display: none;"></div>
+                    <div class="explanation" id="${q.id}-explanation" style="display: none;"></div>
+                </div>
+            `;
+            questionDiv.innerHTML = questionHTML;
+            quizContainer.appendChild(questionDiv);
+        });
+
+        const totalQuestions = shuffledQuestions.length;
+
+        // Navigation Buttons
+        const prevButton = document.getElementById('prev');
+        const nextButton = document.getElementById('next');
+
+        prevButton.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (currentQuestionIndex < totalQuestions - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
+        });
+
+        function showQuestion(index) {
+            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
+            document.querySelector(`.question-container[data-index="${index}"]`).classList.add('active');
+            currentQuestionIndex = index;
+            updateNavigationButtons();
+            updateProgressBar();
+        }
+
+        function updateNavigationButtons() {
+            prevButton.disabled = currentQuestionIndex === 0;
+            nextButton.disabled = currentQuestionIndex === totalQuestions - 1;
+        }
+
+        function updateProgressBar() {
+            const progress = document.getElementById('progress');
+            const percentage = ((currentQuestionIndex) / totalQuestions) * 100;
+            progress.style.width = percentage + '%';
+        }
+
+        // Initial update
+        updateNavigationButtons();
+        updateProgressBar();
+
+        // Submit and Restart Buttons
+        const submitButton = document.getElementById('submit');
+        const restartButton = document.getElementById('restart');
+        const resultDiv = document.getElementById('result');
+
+        submitButton.style.display = 'block';
+
+        submitButton.addEventListener('click', submitQuiz);
+        restartButton.addEventListener('click', restartQuiz);
+
+        function submitQuiz() {
+            let answeredQuestions = 0;
+            score = 0;
+
+            shuffledQuestions.forEach(q => {
+                const userAnswer = document.querySelector(`input[name="${q.id}"]:checked`);
+                const feedbackDiv = document.getElementById(`${q.id}-feedback`);
+                const explanationDiv = document.getElementById(`${q.id}-explanation`);
+                if (userAnswer) {
+                    answeredQuestions++;
+                    if (userAnswer.value === answers[q.id]) {
+                        score++;
+                        feedbackDiv.textContent = 'Corect!';
+                        feedbackDiv.classList.add('correct');
+                    } else {
+                        feedbackDiv.textContent = 'Incorect!';
+                        feedbackDiv.classList.add('incorrect');
+                    }
+                    explanationDiv.textContent = explanations[q.id];
+                    feedbackDiv.style.display = 'block';
+                    explanationDiv.style.display = 'block';
+                }
+            });
+
+            if (answeredQuestions === totalQuestions) {
+                showResult();
+            } else {
+                alert('Răspundeți la toate întrebările!');
+            }
+
+            updateProgressAfterSubmit();
+        }
+
+        function showResult() {
+            resultDiv.textContent = `Ai răspuns corect la ${score} întrebări din ${totalQuestions}.`;
+            submitButton.style.display = 'none';
+            restartButton.style.display = 'block';
+
+            // Update Progress Bar to show percentage
+            const progress = document.getElementById('progress');
+            const percentage = (score / totalQuestions) * 100;
+            progress.style.width = percentage + '%';
+            progress.style.background = percentage >= 70 ? '#4CAF50' : percentage >= 40 ? '#ff9800' : '#f44336';
+        }
+
+        function updateProgressAfterSubmit() {
+            const progress = document.getElementById('progress');
+            const answered = shuffledQuestions.filter(q => document.querySelector(`input[name="${q.id}"]:checked`)).length;
+            const percentage = (answered / totalQuestions) * 100;
+            progress.style.width = percentage + '%';
+        }
+
+        function restartQuiz() {
+
+            // Reset feedback and explanations
+            shuffledQuestions.forEach(q => {
+                const feedbackDiv = document.getElementById(`${q.id}-feedback`);
+                const explanationDiv = document.getElementById(`${q.id}-explanation`);
+                feedbackDiv.textContent = '';
+                feedbackDiv.classList.remove('correct', 'incorrect');
+                feedbackDiv.style.display = 'none';
+                explanationDiv.textContent = '';
+                explanationDiv.style.display = 'none';
+            });
+
+            // Clear selections
+            document.querySelectorAll('input[type="radio"]').forEach(input => input.checked = false);
+
+            // Reset progress bar
+            updateProgressBar();
+
+            // Show first question
+            showQuestion(0);
+
+            // Reset result and high score display
+            resultDiv.textContent = '';
+            document.getElementById('high-score').textContent = '';
+
+            // Show submit button and hide restart button
+            submitButton.style.display = 'block';
+            restartButton.style.display = 'none';
+        }
+
+        // Keyboard Navigation and Answer Selection
+        document.addEventListener('keydown', function (event) {
+            // Key codes: Left Arrow = 37, Right Arrow = 39, Space Bar = 32
+            switch (event.key) {
+                case 'ArrowRight':
+                case 'Right':
+                    // Trigger "Următor" button if not disabled
+                    if (!nextButton.disabled) {
+                        nextButton.click();
+                    }
+                    break;
+                case 'ArrowLeft':
+                case 'Left':
+                    // Trigger "Anterior" button if not disabled
+                    if (!prevButton.disabled) {
+                        prevButton.click();
+                    }
+                    break;
+                case ' ':
+                case 'Spacebar':
+                case 'Space':
+                    // Prevent default spacebar behavior (like scrolling)
+                    event.preventDefault();
+                    // Trigger "Parcă gata" button if visible
+                    if (submitButton.style.display !== 'none') {
+                        submitButton.click();
+                    }
+                    break;
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                    // Select corresponding answer
+                    selectAnswer(event.key);
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        function selectAnswer(key) {
+            const activeQuestion = document.querySelector('.question-container.active .question');
+            if (activeQuestion) {
+                const radios = activeQuestion.querySelectorAll('input[type="radio"]');
+                const optionNumber = parseInt(key, 10);
+                if (optionNumber >= 1 && optionNumber <= radios.length) {
+                    radios[optionNumber - 1].checked = true;
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
